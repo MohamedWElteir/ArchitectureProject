@@ -11,64 +11,48 @@ public class InfixToPostfix {
 
     public static String convertToPostfix(String expression) {
 
-        if (endsWithOperator(expression))
-            return "Expression is already in postfix form";
+        String result = "";
+        Stack<Character> stack1 = new Stack<>();
 
-        // if infix has spaces, we remove them
-        expression = expression.replaceAll("\\s+", "");
-        //System.out.println("expression: " + expression);
+        for (int i = 0; i < expression.length(); i++) {
+            Character c = expression.charAt(i);
 
-        StringJoiner postfixString = new StringJoiner(" ");
-        Stack<Character> operatorStack = new Stack<>();
-        StringBuilder operandBuilder = new StringBuilder();
+            if (c.isLetterOrDigit(c))
+            {
+                result += c;
+            }
 
+            else if (c == '(')
+                stack1.push(c);
 
-        for (char c : expression.toCharArray()) {
-            if (Character.isDigit(c)|| c=='.') {
-                // If the token is a digit, append it to the operand builder string
-                operandBuilder.append(c);
-             }
-            else { // If the token is not a digit
-                if (operandBuilder.length() > 0) { // This handles multi-digit numbers
-                    // Add all the digits from the  operand builder to the postfix string
-                    postfixString.add(operandBuilder.toString());
-                    // Reset the operand builder so it re-append new operands
-                    operandBuilder.setLength(0);
+            else if (c == ')')
+            {
+                while (!stack1.isEmpty() && stack1.peek() != '('){
+                    result += stack1.peek();
+                    stack1.pop();
                 }
-                switch (c) { // Switch case for the operators
-                    case '(' -> operatorStack.push(c);
-                    case ')' -> {
-                        while (!operatorStack.isEmpty() && !operatorStack.peek().equals('(')) {
-                            postfixString.add(String.valueOf(operatorStack.pop()));
-                        }
-                        if (!operatorStack.isEmpty() && operatorStack.peek().equals('(')) {
-                            operatorStack.pop();
-                        }
-                    }
-                    default -> {
-                        // Works in case of operators
-                        while (!operatorStack.isEmpty() && getPrecedence(c) <= getPrecedence(operatorStack.peek())) {
-                            postfixString.add(String.valueOf(operatorStack.pop()));
-                        }
-                        operatorStack.push(c);
 
-                    }
+                stack1.pop();
+            }
+            else
+            {
+                while (!stack1.isEmpty() && getPrecedence(c) <= getPrecedence(stack1.peek()))
+                {
+                    result += stack1.peek();
+                    stack1.pop();
                 }
+                stack1.push(c);
             }
         }
-        // In the end, we construct the postfix string
-        // For the operands
-        if (operandBuilder.length() > 0) {
-            postfixString.add(operandBuilder.toString());
-        }
-        // For the operators
-        while (!operatorStack.isEmpty()) {
-            postfixString.add(String.valueOf(operatorStack.pop()));
-        }
-        System.out.println("postfix String: " + postfixString);
-        return postfixString.toString();
 
+        while (!stack1.isEmpty()) {
+            if (stack1.peek() == '(')
+                return "Invalid Expression";
+            result += stack1.peek();
+            stack1.pop();
+        }
 
+        return result;
     }
     // Comparing the precedence of the operators
     private static int getPrecedence(char c) {

@@ -2,6 +2,8 @@ package Instruction_Formats;
 
 import Operations.InfixToPostfix;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,25 +16,29 @@ public class Format {
         // Reset register counter for each expression
         registerCounter = 1;
         System.out.println("Expression: " + expression);
-        String[] tokens = expression.split(" ");
+        String x = InfixToPostfix.convertToPostfix(expression); //convert string into postfix order
+        String[] ARR = x.split("");
+
+        ArrayList<String> tokens = new ArrayList<String>(Arrays.asList(ARR));
+
         StringBuilder result = new StringBuilder();
 
         switch (format) {
             case 4:
                 result.append(generateThreeAddress(tokens));
                 break;
-            case 3:
-                result.append(generateTwoAddress(tokens));
-                break;
-            case 2:
-                result.append(generateOneAddress(tokens));
-                break;
-            case 1:
-                // For zero address, use the postfix expression
-                String postfix = InfixToPostfix.convertToPostfix(expression);
-                String[] postfixTokens = postfix.split(" ");
-                result.append(generateZeroAddress(postfixTokens));
-                break;
+//            case 3:
+//                result.append(generateTwoAddress(tokens));
+//                break;
+//            case 2:
+//                result.append(generateOneAddress(tokens));
+//                break;
+//            case 1:
+//                // For zero address, use the postfix expression
+//                String postfix = InfixToPostfix.convertToPostfix(expression);
+//                String[] postfixTokens = postfix.split(" ");
+//                result.append(generateZeroAddress(postfixTokens));
+//                break;
             default:
                 throw new IllegalArgumentException("Invalid instruction format");
         }
@@ -55,23 +61,26 @@ public class Format {
         return resultRegister;
     }
 
-    private static String generateThreeAddress(String[] tokens) {
+    private static String generateThreeAddress(ArrayList<String> tokens) {
         StringBuilder result = new StringBuilder();
+        for (int i=0;i<= tokens.size();i+=1)
+        {
+//            System.out.println(tokens);
+//            System.out.println(i);
+            if (isOperator(tokens.get(i)))
+            {
+                String operand1 = tokens.get(i-2);
+                String operand2 = tokens.get(i-1);
+                String operator = tokens.get(i);
 
-        for (int i = 0; i < tokens.length; i += 2) {
-            if (i + 2 < tokens.length) {
-                String operand1 = tokens[i];
-                String operator = tokens[i + 1];
-                String operand2 = tokens[i + 2];
+                tokens.remove(i);
+                tokens.remove(i-1);
+                tokens.remove(i-2);
 
                 String resultRegister = getOrCreateRegister(operand1, operand2);
-
-                // Check if the operand is a constant or a register
-                String op1 = Character.isDigit(operand1.charAt(0)) ? operand1 : "R" + operand1;
-                String op2 = Character.isDigit(operand2.charAt(0)) ? operand2 : "R" + operand2;
-
+                tokens.add(i-2,resultRegister);
                 result.append(getOperationCode(operator)).append(" ").append(resultRegister)
-                        .append(", ").append(op1).append(", ").append(op2).append("\n");
+                        .append(", ").append(operand1).append(", ").append(operand2).append("\n");
             }
         }
 
