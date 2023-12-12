@@ -8,33 +8,23 @@ import java.util.Map;
 public class Format {
 
     private static int registerCounter = 1;
-    private static Map<String, String> registerMap = new HashMap<>(); // Map to store the register for each operand
+    private static final Map<String, String> registerMap = new HashMap<>(); // Map to store the register for each operand
 
     public static String generateInstructions(String expression, int format) {
         // Reset register counter for each expression
         registerCounter = 1;
         System.out.println("Expression: " + expression);
+        String postfix = InfixToPostfix.convertToPostfix(expression);
+        String[] postfixTokens = postfix.split(" ");
         String[] tokens = expression.split(" ");
         StringBuilder result = new StringBuilder();
 
         switch (format) {
-            case 4:
-                result.append(generateThreeAddress(tokens));
-                break;
-            case 3:
-                result.append(generateTwoAddress(tokens));
-                break;
-            case 2:
-                result.append(generateOneAddress(tokens));
-                break;
-            case 1:
-                // For zero address, use the postfix expression
-                String postfix = InfixToPostfix.convertToPostfix(expression);
-                String[] postfixTokens = postfix.split(" ");
-                result.append(generateZeroAddress(postfixTokens));
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid instruction format");
+            case 4 -> result.append(generateThreeAddress(tokens));
+            case 3 -> result.append(generateTwoAddress(tokens));
+            case 2 -> result.append(generateOneAddress(tokens));
+            case 1 -> result.append(generateZeroAddress(postfixTokens));
+            default -> throw new IllegalArgumentException("Invalid instruction format");
         }
 
         return result.toString();
@@ -96,12 +86,12 @@ public class Format {
 
     private static String generateOneAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < tokens.length - 1; i += 2) {
-            String operand = tokens[i];
-            String operator = tokens[i + 1];
-            result.append("LOAD ").append(operand).append("\n");
-            result.append("STORE temp\n");
-            result.append(getOperationCode(operator)).append(" temp\n");
+        for (String token : tokens) {
+            if (isOperator(token)) {
+                result.append(getOperationCode(token)).append("\n");
+            } else {
+                result.append("LOAD ").append(token).append("\n");
+            }
         }
         return result.toString();
     }
@@ -120,20 +110,15 @@ public class Format {
 
 
     private static String getOperationCode(String operator) {
-        switch (operator) {
-            case "+":
-                return "ADD";
-            case "-":
-                return "SUBT";
-            case "*":
-                return "MULT";
-            case "/":
-                return "DIV";
-            case "%":
-                return "MOD";
-            default:
-                throw new IllegalArgumentException("Invalid operator: " + operator);
-        }
+        return switch (operator) {
+            case "+" -> "ADD";
+            case "-" -> "SUBT";
+            case "*" -> "MULT";
+            case "/" -> "DIV";
+            case "%" -> "MOD";
+            case "=" -> "STORE";
+            default -> throw new IllegalArgumentException("Invalid operator: " + operator);
+        };
     }
 
     private static boolean isOperator(String token) {
