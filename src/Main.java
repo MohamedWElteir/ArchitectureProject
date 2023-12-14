@@ -1,15 +1,13 @@
 import Instruction_Formats.Format;
 
 import java.util.Scanner;
-
-import static Instruction_Formats.Format.generateInstructions;
-
 public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        System.out.print("Enter experssion without space PLZ :) --> ");
+        System.out.print("Enter experssion without spaces PLZ :) --> ");
         String expression =sc.next();
-        System.out.println(Format.generateInstructions(expression,4));
+        Format.generateInstructions(expression);
+
 
 
         //String expression = "1 + 2 * 3 - 4 / 5";
