@@ -4,25 +4,25 @@ import Operations.InfixToPostfix;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 public class Format {
 
     private static int registerCounter = 1;
     private static final Map<String, String> registerMap = new HashMap<>(); // Map to store the register for each operand
+    private static final Stack<String> stack = new Stack<>(); // Stack to store the operands
 
     public static String generateInstructions(String expression, int format) {
         // Reset register counter for each expression
         registerCounter = 1;
-        System.out.println("Expression: " + expression);
         String postfix = InfixToPostfix.convertToPostfix(expression);
         String[] postfixTokens = postfix.split(" ");
-        String[] tokens = expression.split(" ");
         StringBuilder result = new StringBuilder();
 
         switch (format) {
-            case 4 -> result.append(generateThreeAddress(tokens));
-            case 3 -> result.append(generateTwoAddress(tokens));
-            case 2 -> result.append(generateOneAddress(tokens));
+            case 4 -> result.append(generateThreeAddress(postfixTokens));
+            case 3 -> result.append(generateTwoAddress(postfixTokens));
+            case 2 -> result.append(generateOneAddress(postfixTokens));
             case 1 -> result.append(generateZeroAddress(postfixTokens));
             default -> throw new IllegalArgumentException("Invalid instruction format");
         }
@@ -48,53 +48,65 @@ public class Format {
     private static String generateThreeAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
 
-        for (int i = 0; i < tokens.length; i += 2) {
-            if (i + 2 < tokens.length) {
-                String operand1 = tokens[i];
-                String operator = tokens[i + 1];
-                String operand2 = tokens[i + 2];
 
+        for (String token : tokens) {
+            if (!isOperator(token)) {
+                stack.push(token);
+            } else {
+                String operand2 = stack.pop();
+                String operand1 = stack.pop();
                 String resultRegister = getOrCreateRegister(operand1, operand2);
-
-                // Check if the operand is a constant or a register
-                String op1 = Character.isDigit(operand1.charAt(0)) ? operand1 : "R" + operand1;
-                String op2 = Character.isDigit(operand2.charAt(0)) ? operand2 : "R" + operand2;
-
-                result.append(getOperationCode(operator)).append(" ").append(resultRegister)
-                        .append(", ").append(op1).append(", ").append(op2).append("\n");
+                result.append(getOperationCode(token)).append(" ").append(resultRegister).append(", ").append(operand1).append(", ").append(operand2).append("\n");
+                stack.push(resultRegister);
             }
         }
 
-        // Reset register map for the next expression
-        registerMap.clear();
-
         return result.toString();
     }
+
 
 
 
 
     private static String generateTwoAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
-        for (int i = 0; i < tokens.length - 1; i += 2) {
-            String operand = tokens[i];
-            String operator = tokens[i + 1];
-            result.append(getOperationCode(operator)).append(" R1, ").append(operand).append("\n");
+
+        for (String token : tokens) {
+            if (!isOperator(token)) {
+                stack.push(token);
+            } else {
+                String operand2 = stack.pop();
+                String operand1 = stack.pop();
+                String resultRegister = getOrCreateRegister(operand1, operand2);
+                result.append(getOperationCode(token)).append(" ").append(resultRegister).append(", ").append(operand2).append("\n");
+                stack.push(resultRegister);
+            }
         }
+
         return result.toString();
     }
 
+
     private static String generateOneAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
+
         for (String token : tokens) {
-            if (isOperator(token)) {
-                result.append(getOperationCode(token)).append("\n");
+            if (!isOperator(token)) {
+                stack.push(token);
             } else {
-                result.append("LOAD ").append(token).append("\n");
+                String operand2 = stack.pop();
+                String operand1 = stack.pop();
+                String resultRegister = getOrCreateRegister(operand1, operand2);
+                result.append("LOAD ").append(operand1).append("\n");
+                result.append(getOperationCode(token)).append(" ").append(operand2).append("\n");
+                result.append("STORE ").append(resultRegister).append("\n");
+                stack.push(resultRegister);
             }
         }
+
         return result.toString();
     }
+
 
     private static String generateZeroAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
@@ -122,6 +134,6 @@ public class Format {
     }
 
     private static boolean isOperator(String token) {
-        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/") || token.equals("%");
+        return token.equals("+") || token.equals("-") || token.equals("*") || token.equals("/") || token.equals("%") || token.equals("=");
     }
 }

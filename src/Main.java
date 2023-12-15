@@ -1,8 +1,12 @@
+import java.util.Scanner;
+
 import static Instruction_Formats.Format.generateInstructions;
 
 public class Main {
     public static void main(String[] args) {
-        String expression = "1 + 2 * 3 - 4 / 5";
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter the expression: ");
+        String expression = sc.nextLine();
         System.out.println("Expression: " + expression);
         System.out.println("Three Address Instructions:");
         System.out.println(generateInstructions(expression,4));
