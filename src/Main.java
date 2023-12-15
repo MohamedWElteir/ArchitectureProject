@@ -6,7 +6,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         System.out.println("Enter the expression: ");
-        String expression = sc.nextLine();
+        String expression = "(1+2*3)-(4-5/6)";
         System.out.println("Expression: " + expression);
         System.out.println("Three Address Instructions:");
         System.out.println(generateInstructions(expression,4));
@@ -19,5 +19,7 @@ public class Main {
 
         System.out.println("Zero Address Instructions:");
         System.out.println(generateInstructions(expression, 1));
+
+        sc.close();
     }
 }

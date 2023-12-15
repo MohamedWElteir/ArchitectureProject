@@ -1,12 +1,10 @@
 package Operations;
+
 import java.util.Stack;
-
-
 import java.util.StringJoiner;
 
 import static Operations.Evaluate.endsWithOperator;
 
-// main method to convert from infix to postfix
 public class InfixToPostfix {
 
     public static String convertToPostfix(String expression) {
@@ -29,7 +27,7 @@ public class InfixToPostfix {
                 operandBuilder.append(c);
              }
             else { // If the token is not a digit
-                if (operandBuilder.length() > 0) { // This handles multi-digit numbers
+                if (!operandBuilder.isEmpty()) { // This handles multi-digit numbers
                     // Add all the digits from the  operand builder to the postfix string
                     postfixString.add(operandBuilder.toString());
                     // Reset the operand builder so it re-append new operands
@@ -58,7 +56,7 @@ public class InfixToPostfix {
         }
         // In the end, we construct the postfix string
         // For the operands
-        if (operandBuilder.length() > 0) {
+        if (!operandBuilder.isEmpty()) {
             postfixString.add(operandBuilder.toString());
         }
         // For the operators

@@ -8,13 +8,11 @@ import java.util.Stack;
 
 public class Format {
 
-    private static int registerCounter = 1;
+    private static int registerCounter = 1; // Counter to keep track of the number of registers
     private static final Map<String, String> registerMap = new HashMap<>(); // Map to store the register for each operand
     private static final Stack<String> stack = new Stack<>(); // Stack to store the operands
 
     public static String generateInstructions(String expression, int format) {
-        // Reset register counter for each expression
-        registerCounter = 1;
         String postfix = InfixToPostfix.convertToPostfix(expression);
         String[] postfixTokens = postfix.split(" ");
         StringBuilder result = new StringBuilder();
@@ -48,7 +46,6 @@ public class Format {
     private static String generateThreeAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
 
-
         for (String token : tokens) {
             if (!isOperator(token)) {
                 stack.push(token);
@@ -70,6 +67,7 @@ public class Format {
 
     private static String generateTwoAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
+        Stack<String> stack = new Stack<>();
 
         for (String token : tokens) {
             if (!isOperator(token)) {
@@ -78,7 +76,10 @@ public class Format {
                 String operand2 = stack.pop();
                 String operand1 = stack.pop();
                 String resultRegister = getOrCreateRegister(operand1, operand2);
+
+                result.append("LOAD ").append(resultRegister).append(", ").append(operand1).append("\n");
                 result.append(getOperationCode(token)).append(" ").append(resultRegister).append(", ").append(operand2).append("\n");
+
                 stack.push(resultRegister);
             }
         }
@@ -89,6 +90,7 @@ public class Format {
 
     private static String generateOneAddress(String[] tokens) {
         StringBuilder result = new StringBuilder();
+        String tempRegister = "Temp";
 
         for (String token : tokens) {
             if (!isOperator(token)) {
@@ -96,11 +98,13 @@ public class Format {
             } else {
                 String operand2 = stack.pop();
                 String operand1 = stack.pop();
-                String resultRegister = getOrCreateRegister(operand1, operand2);
+                if (isOperator(operand1)) {
+                    operand1 = tempRegister;
+                }
                 result.append("LOAD ").append(operand1).append("\n");
                 result.append(getOperationCode(token)).append(" ").append(operand2).append("\n");
-                result.append("STORE ").append(resultRegister).append("\n");
-                stack.push(resultRegister);
+                result.append("STORE ").append(tempRegister).append("\n");
+                stack.push(tempRegister);
             }
         }
 
