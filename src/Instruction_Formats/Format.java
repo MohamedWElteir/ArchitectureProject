@@ -11,8 +11,10 @@ public class Format {
     private static int registerCounter = 1; // Counter to keep track of the number of registers
     private static final Map<String, String> registerMap = new HashMap<>(); // Map to store the register for each operand
     private static final Stack<String> stack = new Stack<>(); // Stack to store the operands
+    private static final StringBuilder result = new StringBuilder(); // StringBuilder to store the result
 
     public static String generateInstructions(String expression, int format) {
+        System.out.println("Infix: " + expression);
         String postfix = InfixToPostfix.convertToPostfix(expression);
         String[] postfixTokens = postfix.split(" ");
         StringBuilder result = new StringBuilder();
@@ -44,8 +46,7 @@ public class Format {
     }
 
     private static String generateThreeAddress(String[] tokens) {
-        StringBuilder result = new StringBuilder();
-
+        result.setLength(0);
         for (String token : tokens) {
             if (!isOperator(token)) {
                 stack.push(token);
@@ -62,13 +63,8 @@ public class Format {
     }
 
 
-
-
-
     private static String generateTwoAddress(String[] tokens) {
-        StringBuilder result = new StringBuilder();
-        Stack<String> stack = new Stack<>();
-
+        result.setLength(0);
         for (String token : tokens) {
             if (!isOperator(token)) {
                 stack.push(token);
@@ -89,21 +85,35 @@ public class Format {
 
 
     private static String generateOneAddress(String[] tokens) {
-        StringBuilder result = new StringBuilder();
+        result.setLength(0);
+        stack.clear();
         String tempRegister = "Temp";
-
         for (String token : tokens) {
             if (!isOperator(token)) {
                 stack.push(token);
             } else {
                 String operand2 = stack.pop();
                 String operand1 = stack.pop();
-                if (isOperator(operand1)) {
-                    operand1 = tempRegister;
+
+                if (!operand1.equals(tempRegister)) {
+                    // Load operand1 into the temp register only if it's not already there
+                    result.append("LOAD ").append(operand1).append("\n");
                 }
-                result.append("LOAD ").append(operand1).append("\n");
+
+                // Perform the operation and store the result in the temp register
                 result.append(getOperationCode(token)).append(" ").append(operand2).append("\n");
-                result.append("STORE ").append(tempRegister).append("\n");
+
+                // Check if the previous operation result is already in the temp register
+                if (!stack.isEmpty() && stack.peek().equals(tempRegister)) {
+                    // If yes, no need to store again
+                    // stack.pop();
+
+                } else {
+                    // If not, store the result in the temp register
+                    result.append("STORE ").append(tempRegister).append("\n");
+                }
+
+                // Push the temp register onto the stack
                 stack.push(tempRegister);
             }
         }
@@ -112,8 +122,9 @@ public class Format {
     }
 
 
+
     private static String generateZeroAddress(String[] tokens) {
-        StringBuilder result = new StringBuilder();
+        result.setLength(0);
         for (String token : tokens) {
             if (isOperator(token)) {
                 result.append(getOperationCode(token)).append("\n");

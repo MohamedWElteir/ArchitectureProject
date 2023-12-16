@@ -14,7 +14,6 @@ public class InfixToPostfix {
 
         // if infix has spaces, we remove them
         expression = expression.replaceAll("\\s+", "");
-        //System.out.println("expression: " + expression);
 
         StringJoiner postfixString = new StringJoiner(" ");
         Stack<Character> operatorStack = new Stack<>();
@@ -22,7 +21,7 @@ public class InfixToPostfix {
 
 
         for (char c : expression.toCharArray()) {
-            if (Character.isDigit(c)|| c=='.') {
+            if (Character.isDigit(c) || c == '.' || Character.isLetter(c)) {
                 // If the token is a digit, append it to the operand builder string
                 operandBuilder.append(c);
              }
@@ -63,7 +62,7 @@ public class InfixToPostfix {
         while (!operatorStack.isEmpty()) {
             postfixString.add(String.valueOf(operatorStack.pop()));
         }
-        System.out.println("postfix String: " + postfixString);
+        System.out.println("Postfix: " + postfixString);
         return postfixString.toString();
 
 
